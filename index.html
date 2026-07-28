@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1b2a" />
+  <title>Árvore Genealógica — Família Dias, Soares & Amorim</title>
+  <meta name="description" content="Árvore genealógica interativa da família Dias, Soares e Amorim, com busca, filtros, destaques por ramo e versão PDF para download." />
+  <style>
+    :root{
+      --bg:#f3ede2;
+      --paper:#fcf8f1;
+      --paper-2:#f8f2e8;
+      --ink:#1e2732;
+      --muted:#6d736e;
+      --navy:#0f2747;
+      --navy-2:#173a68;
+      --navy-soft:#eaf1fb;
+      --green:#496946;
+      --green-soft:#ebf4e8;
+      --wine:#7e3a42;
+      --wine-soft:#f8ecee;
+      --gold:#b28843;
+      --gold-soft:#fbf3dd;
+      --line:#ddd2c2;
+      --shadow:0 18px 50px rgba(33,28,20,.08);
+      --shadow-soft:0 8px 24px rgba(42,34,22,.06);
+      --radius-xl:30px;
+      --radius-lg:22px;
+      --radius-md:16px;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:var(--ink);
+      font-family:var(--sans);
+      background:
+        radial-gradient(circle at top left, rgba(178,136,67,.10), transparent 28%),
+        radial-gradient(circle at top right, rgba(23,58,104,.08), transparent 24%),
+        linear-gradient(180deg,#f8f4ec 0%, var(--bg) 100%);
+    }
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1240px;margin:auto;padding:20px 14px 90px}
+    .hero{
+      position:relative;
+      overflow:hidden;
+      border-radius:var(--radius-xl);
+      padding:36px;
+      color:#fff;
+      background:
+        linear-gradient(135deg, rgba(12,30,55,.96), rgba(21,48,82,.98) 55%, rgba(32,69,112,.96)),
+        linear-gradient(180deg,#132c4e,#1f4778);
+      box-shadow:var(--shadow);
+    }
+    .hero::before{
+      content:"";
+      position:absolute; inset:auto -120px -120px auto;
+      width:340px; height:340px; border-radius:50%;
+      background:radial-gradient(circle, rgba(255,255,255,.14), transparent 60%);
+      pointer-events:none;
+    }
+    .hero::after{
+      content:"";
+      position:absolute; inset:26px 26px auto auto;
+      width:190px; height:190px; border-radius:50%;
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 0 0 28px rgba(255,255,255,.04), 0 0 0 58px rgba(255,255,255,.025);
+      pointer-events:none;
+    }
+    .hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;align-items:end}
+    .eyebrow{
+      display:inline-flex;gap:10px;align-items:center;
+      padding:8px 12px;border-radius:999px;
+      background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.12);
+      text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:800
+    }
+    h1{margin:14px 0 0;font-family:var(--serif);font-size:clamp(2.5rem,6vw,5.2rem);line-height:.94;max-width:10ch}
+    .subtitle{margin-top:16px;max-width:60ch;font-size:1.06rem;line-height:1.65;color:rgba(255,255,255,.84)}
+    .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+    .chip{padding:9px 12px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);font-size:.9rem}
+    .hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+    .btn, .toolbar button, .search-box input, .download-link{
+      font:inherit;
+    }
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:10px;
+      min-height:48px;padding:12px 18px;border-radius:14px;border:1px solid transparent;
+      cursor:pointer;transition:160ms ease;font-weight:700
+    }
+    .btn.primary{background:linear-gradient(135deg,#f2deaa,#d5b46d);color:#1d2330;box-shadow:0 10px 28px rgba(0,0,0,.18)}
+    .btn.secondary{background:rgba(255,255,255,.09);color:#fff;border-color:rgba(255,255,255,.14)}
+    .btn:hover{transform:translateY(-1px)}
+    .hero-panel{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:24px;padding:20px;backdrop-filter:blur(10px)
+    }
+    .hero-panel h2{margin:0 0 14px;font-size:1rem;font-weight:800;letter-spacing:.03em}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .stat{padding:14px;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08)}
+    .stat strong{display:block;font-size:1.7rem;font-family:var(--serif);margin-bottom:4px}
+    .stat span{font-size:.9rem;color:rgba(255,255,255,.78);line-height:1.45}
+    .topbar{
+      position:sticky;top:12px;z-index:20;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+      padding:10px;margin:18px 0 16px;border-radius:20px;
+      background:rgba(252,248,241,.82);backdrop-filter:blur(16px);
+      border:1px solid rgba(149,137,120,.18);box-shadow:var(--shadow-soft)
+    }
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+    .toolbar button{
+      border:1px solid transparent;background:#fff;color:#2b3542;
+      min-height:44px;padding:10px 14px;border-radius:999px;cursor:pointer;
+      box-shadow:0 2px 10px rgba(0,0,0,.04);font-weight:700;white-space:nowrap
+    }
+    .toolbar button.active{background:var(--navy);color:#fff}
+    .toolbar button:hover{border-color:rgba(15,39,71,.18)}
+    .tools-right{display:flex;gap:10px;align-items:center;flex:1;justify-content:flex-end;min-width:280px}
+    .search-box{position:relative;flex:1;max-width:380px}
+    .search-box input{
+      width:100%;min-height:46px;padding:12px 16px 12px 42px;border-radius:14px;
+      border:1px solid rgba(120,111,98,.18);background:#fff;color:var(--ink);outline:none
+    }
+    .search-box::before{content:"⌕";position:absolute;left:14px;top:9px;font-size:1.2rem;color:#77808b}
+    .download-link{
+      display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:12px 16px;border-radius:14px;
+      background:#fff;border:1px solid rgba(120,111,98,.18);font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.04)
+    }
+    .download-link:hover{border-color:rgba(15,39,71,.22)}
+    section{margin-top:28px}
+    .section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:14px}
+    .section-title{display:flex;align-items:center;gap:12px;margin:0;font-family:var(--serif);font-size:1.9rem;line-height:1.05}
+    .section-copy{max-width:60ch;color:var(--muted);line-height:1.6}
+    .dot{width:12px;height:12px;border-radius:50%}
+    .grid{display:grid;gap:16px}
+    .grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .panel{
+      background:rgba(252,248,241,.84);border:1px solid var(--line);border-radius:26px;padding:20px;box-shadow:var(--shadow-soft)
+    }
+    .card{
+      position:relative;background:linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,251,245,.92));
+      border:1px solid var(--line);border-radius:var(--radius-lg);padding:18px 18px 16px;
+      box-shadow:var(--shadow-soft);overflow:hidden
+    }
+    .card::after{
+      content:"";position:absolute;inset:0 auto auto 0;width:100%;height:1px;
+      background:linear-gradient(90deg,rgba(255,255,255,.45),transparent)
+    }
+    .card h3{margin:0 0 8px;font-size:1.08rem;line-height:1.2}
+    .meta{font-size:.93rem;color:var(--muted);line-height:1.6}
+    .paternal{border-top:4px solid var(--navy)}
+    .maternal{border-top:4px solid var(--green)}
+    .spouse{border-top:4px solid var(--wine)}
+    .family{margin-top:12px;padding-top:12px;border-top:1px solid #e9dfd0}
+    .family strong{font-size:.9rem}
+    .family ul{margin:8px 0 0;padding-left:18px}
+    .family li{margin:5px 0;line-height:1.4}
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 10px;border-radius:999px;
+      font-size:.76rem;font-weight:800;letter-spacing:.02em
+    }
+    .tag.blue{background:var(--navy-soft);color:var(--navy)}
+    .tag.green{background:var(--green-soft);color:var(--green)}
+    .tag.red{background:var(--wine-soft);color:var(--wine)}
+    .tag.gold{background:var(--gold-soft);color:#7a5b23}
+    .lineage{display:grid;gap:14px}
+    .branch{position:relative;padding-left:22px}
+    .branch::before{content:"";position:absolute;left:7px;top:0;bottom:0;width:2px;background:#d8cdbd}
+    .branch .card{position:relative}
+    .branch .card::before{content:"";position:absolute;left:-22px;top:26px;width:18px;height:2px;background:#d8cdbd}
+    details{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:12px 14px}
+    details + details{margin-top:10px}
+    summary{cursor:pointer;font-weight:800}
+    .callout{
+      padding:16px 18px;border-radius:18px;background:var(--gold-soft);border:1px solid #ead7a7;line-height:1.6
+    }
+    .you-card{
+      display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:stretch
+    }
+    .portrait{
+      border-radius:22px;padding:22px;background:linear-gradient(135deg,#fff9ef,#f6ecd8);border:1px solid #eadfcf
+    }
+    .portrait h3{font-family:var(--serif);font-size:1.7rem;margin-bottom:10px}
+    .keyfacts{display:grid;gap:10px}
+    .fact{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.72);border:1px solid #e7dccb}
+    .timeline{display:grid;gap:14px}
+    .timeline-item{display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:start;padding:14px 0;border-top:1px solid #eadfcf}
+    .timeline-item:first-child{border-top:0;padding-top:0}
+    .time{font-family:var(--serif);font-size:1rem;color:var(--navy)}
+    .footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.85rem;line-height:1.6}
+    .hidden{display:none !important}
+
+    @media (max-width:980px){
+      .hero-grid,.you-card,.grid.four,.grid.three{grid-template-columns:1fr 1fr}
+      .stats{grid-template-columns:1fr}
+    }
+    @media (max-width:780px){
+      .hero-grid,.you-card,.grid.two,.grid.three,.grid.four,.timeline-item{grid-template-columns:1fr}
+      .hero{padding:24px}
+      h1{max-width:none}
+      .topbar{top:6px}
+      .tools-right{justify-content:stretch;min-width:100%}
+      .search-box{max-width:none}
+    }
+    @media (max-width:640px){
+      .wrap{padding:10px 10px 60px}
+      .hero,.panel,.card,.portrait{border-radius:20px}
+      .toolbar{width:100%;overflow:auto;flex-wrap:nowrap;padding-bottom:4px}
+      .download-link,.btn{width:100%;justify-content:center}
+      .tools-right{flex-direction:column;align-items:stretch}
+    }
+    @media print{
+      body{background:#fff}
+      .topbar,.hero-actions,.download-link,.search-box,.toolbar{display:none !important}
+      .wrap{max-width:none;padding:0}
+      .hero{color:#111;background:#fff;border:1px solid #ddd;box-shadow:none;margin-bottom:16px}
+      .hero::before,.hero::after,.card::after{display:none}
+      .panel,.card,details,.portrait{box-shadow:none;background:#fff}
+      section{break-inside:avoid}
+      .card{break-inside:avoid-page}
+      a{text-decoration:none;color:inherit}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow">Arquivo familiar • edição premium • versão navegável</div>
+          <h1>Árvore Genealógica</h1>
+          <p class="subtitle">Famílias <strong>Dias</strong>, <strong>Soares</strong> e <strong>Amorim</strong>. Um registro navegável das memórias familiares, com busca, filtros por ramo e uma versão em PDF para guardar, imprimir ou compartilhar.</p>
+          <div class="chips">
+            <span class="chip">Portugal → Minas Gerais → Paraná</span>
+            <span class="chip">Muriaé/MG</span>
+            <span class="chip">Apucarana/PR</span>
+            <span class="chip">Cachoeira Alegre/MG</span>
+          </div>
+          <div class="hero-actions">
+            <a class="btn primary" href="#linhas">Explorar a árvore</a>
+            <a class="btn secondary" href="arvore-genealogica-jorge.pdf" download>Baixar PDF</a>
+          </div>
+        </div>
+        <aside class="hero-panel">
+          <h2>Resumo deste acervo</h2>
+          <div class="stats">
+            <div class="stat"><strong>25</strong><span>pessoas e vínculos familiares já mapeados nesta versão.</span></div>
+            <div class="stat"><strong>3</strong><span>núcleos centrais: linha paterna, linha materna e você como ponto de encontro.</span></div>
+            <div class="stat"><strong>8</strong><span>pendências principais para confirmar via certidões, cartórios e registros históricos.</span></div>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <div class="topbar" id="linhas">
+      <nav class="toolbar" aria-label="Filtros da árvore">
+        <button class="active" data-filter="all">Todos</button>
+        <button data-filter="paternal">Linha paterna</button>
+        <button data-filter="maternal">Linha materna</button>
+        <button data-filter="cousins">Primos</button>
+        <button data-filter="pending">A descobrir</button>
+      </nav>
+      <div class="tools-right">
+        <label class="search-box" aria-label="Buscar na árvore">
+          <input id="search" type="search" placeholder="Buscar nome, apelido, cidade, ramo..." />
+        </label>
+        <a class="download-link" href="arvore-genealogica-jorge.pdf" download>⬇ Baixar PDF</a>
+      </div>
+    </div>
+
+    <section>
+      <div class="you-card panel">
+        <div class="portrait">
+          <span class="tag gold">Ponto de convergência</span>
+          <h3>Jorge Luiz Amorim Dias</h3>
+          <p class="meta">Nascido em 18/10/1987, em Apucarana/PR, reunindo os ramos <strong>Dias / Soares</strong> e <strong>Amorim</strong>. Esta edição apresenta a árvore como uma peça visual de família e também como base para futuras confirmações documentais.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+            <span class="tag blue">Família Dias / Soares</span>
+            <span class="tag green">Família Amorim</span>
+          </div>
+        </div>
+        <div class="keyfacts">
+          <div class="fact"><strong>Origem destacada</strong><br><span class="meta">Ramo paterno com memória de origem portuguesa; ramo materno ancorado em Minas Gerais.</span></div>
+          <div class="fact"><strong>Uso desta página</strong><br><span class="meta">Pesquisar nomes, isolar ramos, destacar primos e baixar uma cópia em PDF para arquivo.</span></div>
+          <div class="fact"><strong>Próxima evolução</strong><br><span class="meta">Adicionar certidões, fotos, localidades exatas e confirmação dos vínculos ainda em aberto.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section data-group="paternal">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title"><span class="dot" style="background:var(--navy)"></span>Linha paterna — Dias / Soares</h2>
+          <p class="section-copy">Um ramo marcado pela memória portuguesa, por passagens por Minas Gerais e por vínculos fortes com Apucarana/PR. Aqui estão os nomes mais centrais já reunidos.</p>
+        </div>
+      </div>
+      <div class="panel lineage">
+        <div class="grid two">
+          <article class="card paternal person" data-tags="paternal pending portugal jose dias bisavo origem portuguesa">
+            <h3>José Dias</h3>
+            <div class="meta">Seu bisavô paterno. Português. A localidade exata em Portugal ainda não foi identificada.</div>
+            <span class="tag blue">Origem portuguesa</span>
+          </article>
+          <article class="card spouse person" data-tags="paternal pending felisbina de jesus bisavo">
+            <h3>Felisbina de Jesus</h3>
+            <div class="meta">Sua bisavó paterna. Naturalidade e datas ainda não confirmadas.</div>
+            <span class="tag red">Dados em confirmação</span>
+          </article>
+        </div>
+
+        <div class="branch">
+          <article class="card paternal person" data-tags="paternal jorge soares dias avo 21 02 1934 1996 apucarana cartorario cartorio">
+            <h3>Jorge Soares Dias</h3>
+            <div class="meta">Seu avô paterno.<br>★ 21/02/1934<br>† 1996<br>Ligado a Apucarana/PR. A memória familiar registra atuação como cartorário em um cartório conhecido da cidade.</div>
+            <span class="tag blue">Núcleo paterno</span>
+          </article>
+
+          <article class="card paternal person" data-tags="paternal francisco soares dias sobrinho tio chico cachoeira alegre jornalista escritor historiador">
+            <h3>Francisco Soares Dias Sobrinho — “Tio Chico”</h3>
+            <div class="meta">Irmão de Jorge Soares Dias. Nascido em Minas Gerais, associado a Cachoeira Alegre/MG. Jornalista, escritor e historiador de Apucarana.</div>
+          </article>
+
+          <article class="card spouse person" data-tags="paternal anita tia anita">
+            <h3>Anita — “Tia Anita”</h3>
+            <div class="meta">Irmã de Jorge Soares Dias.</div>
+          </article>
+
+          <article class="card spouse person" data-tags="paternal nuquinha tia nuquinha tio meco americo vermelho pending">
+            <h3>“Tia Nuquinha”</h3>
+            <div class="meta">Irmã de Jorge Soares Dias. Nome civil ainda a descobrir. Foi casada com “Tio Meco” (Américo Vermelho).</div>
+            <div class="family">
+              <strong>Filho conhecido</strong>
+              <ul>
+                <li>Américo Dias Vermelho — fotógrafo; filho do casal, não o Tio Meco.</li>
+              </ul>
+            </div>
+            <span class="tag red">Informação parcial</span>
+          </article>
+        </div>
+
+        <div class="grid two">
+          <article class="card spouse person" data-tags="paternal candida soares dias avo 01 05 1969">
+            <h3>Cândida Soares Dias</h3>
+            <div class="meta">Sua avó paterna.<br>† 01/05/1969<br>Esposa de Jorge Soares Dias.</div>
+            <span class="tag red">Ramo de Cândida</span>
+          </article>
+          <article class="card paternal person" data-tags="paternal jorge luiz soares dias pai 01 10 1962 apucarana">
+            <h3>Jorge Luiz Soares Dias</h3>
+            <div class="meta">Seu pai.<br>★ 01/10/1962<br>Apucarana/PR</div>
+            <span class="tag blue">Pai</span>
+          </article>
+        </div>
+
+        <details>
+          <summary>Irmãos de Cândida — tios do seu pai</summary>
+          <div class="grid three" style="margin-top:12px">
+            <article class="card person" data-tags="paternal olivia alcantara tia"><h3>Olívia Alcântara</h3><div class="meta">Irmã de Cândida. “Alcântara” pode ser sobrenome de casamento.</div></article>
+            <article class="card person" data-tags="paternal oraide tia"><h3>Oraide</h3><div class="meta">Irmã de Cândida.</div></article>
+            <article class="card person" data-tags="paternal iraci cicy tia"><h3>Iraci — “Cicy”</h3><div class="meta">Irmã de Cândida.</div></article>
+            <article class="card person" data-tags="paternal odete tia"><h3>Odete</h3><div class="meta">Irmã de Cândida.</div></article>
+            <article class="card person" data-tags="paternal osvaldo vadim tio"><h3>Osvaldo — “Vadim”</h3><div class="meta">Irmão de Cândida.</div></article>
+          </div>
+        </details>
+
+        <details open>
+          <summary>Filhos de Jorge Soares Dias e Cândida</summary>
+          <div class="grid two" style="margin-top:12px">
+            <article class="card paternal person" data-tags="paternal jorge luiz soares dias pai apucarana">
+              <h3>Jorge Luiz Soares Dias</h3>
+              <div class="meta">★ 01/10/1962 — Apucarana/PR</div>
+            </article>
+            <article class="card paternal person" data-tags="paternal luiz henrique soares dias tio vanda ferro cousins">
+              <h3>Luiz Henrique Soares Dias</h3>
+              <div class="meta">Seu tio, irmão do seu pai. Teve três filhos com Vanda Ferro.</div>
+              <div class="family">
+                <strong>Filhos — seus primos</strong>
+                <ul>
+                  <li>George Ferro</li>
+                  <li>Thiego Ferro</li>
+                  <li>Thalles Ferro</li>
+                </ul>
+              </div>
+            </article>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section data-group="maternal">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title"><span class="dot" style="background:var(--green)"></span>Linha materna — Amorim</h2>
+          <p class="section-copy">O ramo materno traz a base mineira da árvore, com vínculos familiares em Muriaé/MG e diversos primos já identificados a partir dos irmãos de Inez.</p>
+        </div>
+      </div>
+      <div class="panel lineage">
+        <div class="grid four">
+          <article class="card maternal person" data-tags="maternal inacio jose amorim bisavo"><h3>Inácio José Amorim</h3><div class="meta">Bisavô materno — pai de Antônio Amorim.</div></article>
+          <article class="card spouse person" data-tags="maternal graciana candida de jesus bisavo"><h3>Graciana Cândida de Jesus</h3><div class="meta">Bisavó materna — mãe de Antônio Amorim.</div></article>
+          <article class="card maternal person" data-tags="maternal antonio nunes da silva bisavo"><h3>Antônio Nunes da Silva</h3><div class="meta">Bisavô materno — pai de Tereza Amorim.</div></article>
+          <article class="card spouse person" data-tags="maternal francisca julia de souza bisavo"><h3>Francisca Júlia de Souza</h3><div class="meta">Bisavó materna — mãe de Tereza Amorim.</div></article>
+        </div>
+
+        <div class="grid two">
+          <article class="card maternal person" data-tags="maternal antonio amorim avo muriae"><h3>Antônio Amorim</h3><div class="meta">Seu avô materno. Filho de Inácio José Amorim e Graciana Cândida de Jesus.</div></article>
+          <article class="card spouse person" data-tags="maternal tereza amorim avo muriae"><h3>Tereza Amorim</h3><div class="meta">Sua avó materna. Filha de Antônio Nunes da Silva e Francisca Júlia de Souza.</div></article>
+        </div>
+
+        <article class="card spouse person" data-tags="maternal inez julia amorim dias mae muriae 03 02 1962">
+          <h3>Inez Júlia Amorim Dias</h3>
+          <div class="meta">Sua mãe.<br>★ 03/02/1962<br>Muriaé/MG</div>
+          <span class="tag green">Mãe</span>
+        </article>
+
+        <details open>
+          <summary>Irmãos de Inez — seus tios, tias e primos</summary>
+          <div class="grid two" style="margin-top:12px">
+            <article class="card maternal person" data-tags="maternal cousins geraldo amorim vania filhas primas"><h3>Geraldo Amorim</h3><div class="meta">Ex-esposa: Vânia.</div><div class="family"><strong>Filhas</strong><ul><li>Ana Célia Amorim</li><li>Lúcia de Fátima Amorim</li><li>Dayane Amorim</li><li>Bruna Amorim</li></ul></div></article>
+            <article class="card maternal person" data-tags="maternal cousins pacelli amorim olga filhos primos"><h3>Pacelli Amorim</h3><div class="meta">Ex-esposa: Olga.</div><div class="family"><strong>Filhos</strong><ul><li>Jones Cardoso Amorim</li><li>Fábio Cardoso Amorim</li></ul></div></article>
+            <article class="card maternal person" data-tags="maternal cousins ana maria amorim edson figueiredo filhos primas"><h3>Ana Maria Amorim</h3><div class="meta">Ex-marido: Edson Figueiredo.</div><div class="family"><strong>Filhos</strong><ul><li>Fabrício Figueiredo Amorim</li><li>Kaoani Amorim</li></ul></div></article>
+            <article class="card maternal person" data-tags="maternal cousins maria aparecida amorim pedro falecida filhos primos"><h3>Maria Aparecida Amorim †</h3><div class="meta">Ex-marido: Pedro.</div><div class="family"><strong>Filhos</strong><ul><li>Júnior dos Passos Amorim</li><li>Jarbas dos Passos Amorim</li></ul></div></article>
+            <article class="card maternal person" data-tags="maternal cousins julia da conceicao amorim falecida modesto filhos primos"><h3>Julia da Conceição Amorim †</h3><div class="meta">Ex-marido: nome não lembrado.</div><div class="family"><strong>Filhos</strong><ul><li>Arthur Modesto Amorim</li><li>Juliana Amorim</li><li>Carol Amorim</li></ul></div></article>
+            <article class="card maternal person" data-tags="maternal cousins lucia amorim chiconato luiz chiconato filhos primas"><h3>Lucia Amorim Chiconato</h3><div class="meta">Casada com Luiz Chiconato.</div><div class="family"><strong>Filhos</strong><ul><li>Luiz Fernando Chiconato</li><li>Patrícia Amorim Chiconato</li><li>Fernanda Amorim Chiconato</li></ul></div></article>
+            <article class="card maternal person" data-tags="maternal cousins mariuza amorim rissa sidney filhos primas"><h3>Mariuza Amorim Rissá</h3><div class="meta">Casada com Sidney Rissá.</div><div class="family"><strong>Filhos</strong><ul><li>Kelly Cristina Rissá †</li><li>Henrique Amorim Rissá</li><li>Thaís Amorim Rissá</li></ul></div></article>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section data-group="pending">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title"><span class="dot" style="background:var(--gold)"></span>Linha do que ainda precisa ser confirmado</h2>
+          <p class="section-copy">Esses pontos já existem como memória familiar, mas merecem confirmação por documentos, cartórios ou registros históricos.</p>
+        </div>
+      </div>
+      <div class="panel timeline">
+        <div class="timeline-item"><div class="time">Portugal</div><div class="meta"><strong>José Dias:</strong> cidade ou freguesia de nascimento ainda não identificada.</div></div>
+        <div class="timeline-item"><div class="time">Ascendência</div><div class="meta"><strong>Pais de José Dias</strong> ainda não localizados nesta versão da árvore.</div></div>
+        <div class="timeline-item"><div class="time">Felisbina</div><div class="meta">Naturalidade e dados biográficos de <strong>Felisbina de Jesus</strong> ainda não confirmados.</div></div>
+        <div class="timeline-item"><div class="time">Nuquinha</div><div class="meta">Nome civil da <strong>“Tia Nuquinha”</strong> ainda a descobrir.</div></div>
+        <div class="timeline-item"><div class="time">Tio Meco</div><div class="meta">Nome completo de <strong>“Tio Meco” (Américo Vermelho)</strong> ainda precisa de confirmação.</div></div>
+        <div class="timeline-item"><div class="time">Cândida</div><div class="meta">Pais de <strong>Cândida Soares Dias</strong> ainda não aparecem com segurança nesta árvore.</div></div>
+        <div class="timeline-item"><div class="time">Apucarana</div><div class="meta">Nome do cartório onde <strong>Jorge Soares Dias</strong> trabalhou ainda não foi confirmado.</div></div>
+        <div class="timeline-item"><div class="time">Relações</div><div class="meta">Também permanece em aberto a confirmação se <strong>Amélia Dornelas</strong> pertence diretamente ao ramo de Cândida.</div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="callout">
+        <strong>Nota de curadoria:</strong> esta árvore foi construída a partir das informações familiares fornecidas até agora. Onde não há documento, o conteúdo foi mantido como memória oral da família e deve ser tratado como hipótese até validação formal.
+      </div>
+    </section>
+
+    <div class="footer">
+      Projeto publicado para navegação e preservação familiar. A versão PDF pode ser baixada diretamente pelos botões desta página.
+    </div>
+  </div>
+
+  <script>
+    const filterButtons = [...document.querySelectorAll('.toolbar button')];
+    const people = [...document.querySelectorAll('.person')];
+    const search = document.getElementById('search');
+
+    function applyFilters(){
+      const active = document.querySelector('.toolbar button.active')?.dataset.filter || 'all';
+      const q = (search.value || '').trim().toLowerCase();
+
+      people.forEach(el => {
+        const text = (el.innerText + ' ' + (el.dataset.tags || '')).toLowerCase();
+        const bySearch = !q || text.includes(q);
+        let byFilter = active === 'all' || text.includes(active);
+
+        if(active === 'cousins'){
+          byFilter = text.includes('primo') || text.includes('primos') || text.includes('prima') || text.includes('primas') || text.includes('filhos') || text.includes('filhas') || (el.dataset.tags || '').includes('cousins');
+        }
+        if(active === 'pending'){
+          byFilter = text.includes('a descobrir') || text.includes('não confirm') || text.includes('pend') || (el.dataset.tags || '').includes('pending');
+        }
+
+        el.classList.toggle('hidden', !(bySearch && byFilter));
+      });
+    }
+
+    filterButtons.forEach(btn => btn.addEventListener('click', () => {
+      filterButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilters();
+    }));
+
+    search.addEventListener('input', applyFilters);
+  </script>
+</body>
+</html>
